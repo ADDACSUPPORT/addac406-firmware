@@ -1,0 +1,30 @@
+{
+ "schema": 1,
+ "product": "ADDAC406",
+ "channels": {
+  "release": [
+   {
+    "version": "V0.5",
+    "file": "release/addac406_V0.5.hex",
+    "size": 273707,
+    "crc32": "13D3E8B0",
+    "sha256": "261bbba91cade00b9ede2b64b7e4239a747634b5a18fb67122fd0b23e0fcce2e",
+    "date": "2026-10-19T15:37:10+01:00",
+    "commit": "69736e243c46d9dd10b6a7ec36518d12bf81267d",
+    "notes": "- (bug fix) The output drifted out of sync with the input clock: by up to about 25 ms that changed from loop to loop, and further during long durations (tens of ms over 128 beats). The output now follows the input beat by beat instead of running at a tempo measured once per loop, so at 1x it stays within 1 ms of the input at any duration.\n- (bug fix) At 1x with an input tempo that isn't a whole number of BPM (e.g. 100.4), the target tempo was rounded, so the output slowly fell behind during long durations.\n- When the input clock stops, the outputs keep running at the last tempo as before, and lock to the clock again on its first beat when it comes back."
+   },
+   {
+    "version": "V0.4",
+    "file": "release/addac406_V0.4.hex",
+    "size": 273707,
+    "crc32": "7D7EF2AF",
+    "sha256": "8667e59610173d5e7bc5df310e1c661359e18d509198bb7797efbd84576555b5",
+    "date": "2026-10-14T11:43:31+01:00",
+    "commit": "59ff3826d016773046ac9f3c520519dd5b2724eb",
+    "notes": "- (bug fix) In loop mode, the output could skip the beat where each cycle restarts. At 1x the output now matches the input clock exactly, and trigger mode always outputs the full number of beats.\n- (bug fix) A steady input clock was sometimes treated as stopped for a moment, briefly bending the output.\n- (bug fix) After several hours of running, the outputs could stop updating. They now keep running indefinitely.\n- The last pulse before an output goes quiet (end of a trigger run, entering a pause) is no longer cut short."
+   }
+  ],
+  "dev": []
+ },
+ "updated": "2026-10-19T14:42:24+00:00"
+}

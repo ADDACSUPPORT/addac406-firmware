@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADDAC406 Firmware</title>
+<meta name="description" content="Install the latest ADDAC406 Clock Bender firmware from the browser, over USB.">
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1c1a; --muted: #6b6862;
+    --line: #dedbd4; --accent: #1d1c1a; --accent-ink: #ffffff; --warn: #8a5a00;
+    --ok: #2f6b2f; --bar: #1d1c1a;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121211; --panel: #1b1b1a; --ink: #ecebe8; --muted: #9c9993;
+      --line: #2e2d2b; --accent: #ecebe8; --accent-ink: #121211; --warn: #e0b060;
+      --ok: #8fcf8f; --bar: #ecebe8;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121211; --panel: #1b1b1a; --ink: #ecebe8; --muted: #9c9993;
+    --line: #2e2d2b; --accent: #ecebe8; --accent-ink: #121211; --warn: #e0b060;
+    --ok: #8fcf8f; --bar: #ecebe8;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  header { margin-bottom: 28px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .version { color: var(--muted); margin: 0; }
+  .version strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .note {
+    border-left: 3px solid var(--warn); padding: 10px 14px; margin: 0 0 28px;
+    background: var(--panel); border-radius: 0 6px 6px 0;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h2 { font-size: 18px; margin: 0; }
+  .card p { margin: 0; color: var(--muted); }
+  .steps { margin: 0; padding-left: 20px; color: var(--muted); }
+  .steps li { margin: 4px 0; }
+  .steps li.active { color: var(--ink); font-weight: 600; }
+  .steps li.done { color: var(--ok); }
+  .btn {
+    font: inherit; font-weight: 600; cursor: pointer; width: 100%;
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 8px; padding: 12px 16px;
+  }
+  .btn[disabled] { opacity: 0.45; cursor: default; }
+  .linkbtn { font: inherit; background: none; border: 0; padding: 0; color: var(--muted); text-decoration: underline; cursor: pointer; }
+  select { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  progress { width: 100%; height: 10px; accent-color: var(--bar); }
+  #status { min-height: 1.55em; }
+  #status.error { color: var(--warn); }
+  #status.ok { color: var(--ok); }
+  .notes { white-space: pre-wrap; color: var(--muted); font-size: 14px; margin: 0; }
+  .unsupported { color: var(--warn); }
+  h3 { font-size: 16px; margin: 36px 0 8px; }
+  section p, section li { color: var(--muted); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+  a { color: inherit; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ADDAC406 Clock Bender firmware</h1>
+    <p class="version" id="version">Loading releases…</p>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <h2 style="flex:1">Install</h2>
+      <label for="release" class="row" style="gap:6px;color:var(--muted)">Release
+        <select id="release" disabled></select>
+      </label>
+    </div>
+
+    <p id="unsupported" class="unsupported" hidden>
+      This browser can't program the module. Use <strong>Chrome</strong> or <strong>Edge</strong>
+      on a computer, or download the file below and use the Teensy Loader.
+    </p>
+
+    <ol class="steps" id="steps">
+      <li data-step="1">Connect the module's USB port (on the Teensy board at the back) to the computer.
+        <!-- TODO(addac): confirm whether the module should also be powered from the case. --></li>
+      <li data-step="2">Press <strong>Restart module</strong> and pick the Teensy port. The module
+        restarts into programming mode and its display stops updating.</li>
+      <li data-step="3">Press <strong>Install</strong> and pick the Teensy bootloader.</li>
+      <li data-step="4">Wait for the progress bar to finish. The module restarts with the new firmware.</li>
+    </ol>
+
+    <button class="btn" id="restart" disabled>Restart module</button>
+    <button class="btn" id="install" disabled hidden>Install</button>
+    <progress id="progress" max="1" value="0" hidden></progress>
+    <p id="status"></p>
+    <p><button class="linkbtn" id="skip" hidden>The module is already in programming mode</button></p>
+  </div>
+
+  <section>
+    <h3>Release notes</h3>
+    <p class="notes" id="notes"></p>
+
+    <h3>If the module isn't found</h3>
+    <ul>
+      <li>Try another USB cable: many only carry power.</li>
+      <li>If <strong>Restart module</strong> shows no Teensy port, the module may already be in
+        programming mode (for example after an interrupted update). Use
+        <em>The module is already in programming mode</em> and press Install.</li>
+      <li>You can also put it in programming mode by pressing the small button on the
+        Teensy board once.</li>
+    </ul>
+
+    <h3>Without the browser</h3>
+    <p>
+      Download <a id="download" href="#" download>the firmware file</a> and install it with
+      PJRC's <a href="https://www.pjrc.com/teensy/loader.html">Teensy Loader</a>: open the file,
+      press the button on the Teensy board, and the loader programs it.
+    </p>
+  </section>
+
+  <footer>ADDAC System · <span id="build"></span></footer>
+</main>
+<script src="hex.js?v=69736e24"></script>
+<script src="halfkay.js?v=69736e24"></script>
+<script src="app.js?v=69736e24"></script>
+</body>
+</html>
